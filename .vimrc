@@ -34,7 +34,7 @@ set smartcase
 set noswapfile
 set nobackup
 set hidden
-"skip over folds with empty line nav '{' cmds
+"skip over folded blocks with nav '{' cmds
 set foldopen-=block
 "hide tabnames at top of doc
 set showtabline=0
@@ -46,8 +46,7 @@ set statusline+=\ %.60F                     "filename truncated to 60 characters
 set statusline+=\%m\ %r                     "modified/read-only flags
 set statusline+=\%=%c                       "column number aligned to the right
 
-"use global windows clipboard
-set clipboard=unnamed
+
 "fix backspace key to act conventionally
 set backspace=indent,eol,start
 "convert tabs to spaces automatically
@@ -68,16 +67,21 @@ nnoremap <S-Tab> :bp<CR>
 nnoremap <F1> :NERDTreeToggle<CR>
 nnoremap <F2> :Listbufs<CR>:buffer<Space>
 nnoremap <F3> :set lines=999 columns=999<CR>
-set pastetoggle=<F4>
+nnoremap <F4> :set paste!<CR>
 nnoremap <leader>bd :bd!<CR>             
-nnoremap <leader>br :bp\|bd! #<CR>      
+nnoremap <leader>br :bn\|bd! #<CR>      
 nnoremap <leader>w :w!<CR>
 nnoremap <leader>so :w\|source %<CR>
 nnoremap <leader>do :diffo<CR>
 nnoremap <leader>dt :difft<CR>
 nnoremap <leader>hl :set hlsearch!<CR>
+nnoremap <leader>lw :set wrap!<CR>
 nnoremap j gj
 nnoremap k gk
+vnoremap // y/\V<C-R>"<CR>
+
+"instead of using unnamed clipboard as a catchall
+nnoremap <leader>y "*y<CR>    
 
 "filetype extensions
 autocmd BufNewFile,BufRead *.ddl,*.sql set filetype=sql
@@ -101,6 +105,7 @@ autocmd FileType sql setlocal sw=8 sts=8 noexpandtab
 "       NERDTree           - Replaces netrw as file explorer
 "       Fugitive           - Git integration
 
+
 " Settings Unique to Plugins
 let g:bufferline_show_bufnr = 0
 let g:bufferline_active_buffer_left ='   ==[ '
@@ -108,24 +113,28 @@ let g:bufferline_active_buffer_right =']==   '
 autocmd VimEnter * NERDTree
 autocmd VimEnter * set winfixwidth  "tbd should prevent the nerdtree window from resizing
 let NERDTreeIgnore=['\.pol$','\.regtrans-ms$','\.blf$'] "prevent certain files from showing up in NerdTree file explorer
+let NERDTreeQuitOnOpen=1
 ":AddTabularPattern first_comma /^[^,]*\zs,/r0c0l0  --figure this out later
 
 "Commands
 command! -nargs=* Vgrep execute 'normal c' | execute 'vimgrep <args>' | :vert cw | :vertical resize 70
 command! -nargs=* READSTDOUT execute 'vnew | r! <args>'
-command! -nargs=* PrdHiveMetaStore execute 'vnew | r! python C:\Users\dmarling\Desktop\scripts\call_hive_metastore.py <args>' | execute '%s/[()]//' 
-command! -nargs=* StgHiveMetaStore execute 'vnew | r! python C:\Users\dmarling\Desktop\scripts\ <args>' | execute '%s/[()]//' 
+command! -nargs=* PrdHiveMetaStore execute 'vnew | r! python C:\Users\dmarling\Desktop\scripts\vim_call_prd_hive_metastore.py <args>' | execute '%s/[()]//' 
+command! -nargs=* DevHiveMetaStore execute 'vnew | r! python C:\Users\dmarling\Desktop\scripts\vim_call_dev_hive_metastore.py <args>' | execute '%s/[()]//' 
+command! -nargs=* StgHiveMetaStore execute 'vnew | r! python C:\Users\dmarling\Desktop\scripts\vim_call_stg_hive_metastore.py <args>' | execute '%s/[()]//'
 command! Listbufs call CleanBufferNav()
 command! -nargs=1 SearchBuffers call setqflist([]) | execute 'bufdo vimgrepadd' . (<f-args>) . ' %' | copen
 command! -nargs=1 Vres execute 'vertical resize <args>' | set winfixwidth
 command! PrdHiveRun execute 'w C:\Users\dmarling\Desktop\scripts\prdquery.sql' | execute '!python C:\Users\dmarling\Desktop\scripts\execute_arbitrary_hive_script.py C:\Users\dmarling\Desktop\scripts\prdquery.sql'
+command! DevHiveRun execute 'w! C:\Users\dmarling\Desktop\scripts\devquery.sql' | execute 'vnew | r! python C:\Users\dmarling\Desktop\scripts\devquery.py C:\Users\dmarling\Desktop\scripts\devquery.sql'
 command! StgHiveRun execute 'w C:\Users\dmarling\Desktop\scripts\stgquery.sql' | execute '!python C:\Users\dmarling\Desktop\scripts\ C:\Users\dmarling\Desktop\scripts\stgquery.sql'
+command! BigFileSettings execute set nocursorline | :set norelativenumber | :syntax off
 
 "Commands with dependencies on settings or external programs
 " XMLPrettyPrint 1)fdm=syntax 2) let g:xml_syntax_folding=1 3)filetype plugin indent on 4) sw=8 5) sts=8 
 command! XMLPrettyPrint set filetype=xml | %s/></>\r</ | execute 'normal gg=G' 
 command! JSONPrettyPrint set filetype=json | %!python -m json.tool 
-command! XMLPrPrCollapse execute ':%s/^\s\+//' | execute ':%s/\n//'
+command! XMLPrettyPrintCollapse execute ':%s/^\s\+//' | execute ':%s/\n//'
 
 " matchit can match xml angle brackets with % and I'm sure other things
 " **relies on filetype detection for xml
