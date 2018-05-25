@@ -76,12 +76,16 @@ nnoremap <leader>do :diffo<CR>
 nnoremap <leader>dt :difft<CR>
 nnoremap <leader>hl :set hlsearch!<CR>
 nnoremap <leader>lw :set wrap!<CR>
+nnoremap <leader>fs <Esc>:call libcallnr("gvimfullscreen_64.dll", "ToggleFullScreen", 0)<CR>
+nnoremap <leader>hs <Esc>:call libcallnr("gvimfullscreen_64.dll", "ToggleFullScreen", 0)<CR>:set columns=130<CR><C-W>=
+nnoremap <leader>sb <Esc>:call setqflist(map(filter(range(1, bufnr('$')), 'buflisted(v:val)'), '{"bufnr":v:val}'))<CR>:copen<CR>
 nnoremap j gj
 nnoremap k gk
-vnoremap // y/\V<C-R>"<CR>
+vnoremap <expr> // 'y/\V'.escape(@",'\').'<CR>'
 
 "instead of using unnamed clipboard as a catchall
-nnoremap <leader>y "*y<CR>    
+nnoremap <leader>y "+y
+vnoremap <leader>y "+y
 
 "filetype extensions
 autocmd BufNewFile,BufRead *.ddl,*.sql set filetype=sql
@@ -150,4 +154,5 @@ function! CleanBufferNav()
     let list = substitute(list, '\(\d\+\s\+\)\(\S*\)', '\=submatch(1)."     "','g')
     echo list 
 endfunction
+
 
