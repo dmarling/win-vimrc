@@ -84,17 +84,17 @@ set statusline+=\%=%c                       "column number aligned to the right
 colorscheme gotham
 set background=dark
 highlight DiffText guifg=Red
-"gitgutter signs
 let g:gitgutter_sign_added='A'
 let g:gitgutter_sign_modified='M'
 let g:gitgutter_sign_removed='D'
 let g:gitgutter_sign_removed_first_line='^^'
 let g:gitgutter_sign_modified_removed='MD'
-"nerdtree 
 autocmd VimEnter * NERDTree
 autocmd VimEnter * set winfixwidth  "tbd should prevent the nerdtree window from resizing
 let NERDTreeIgnore=['\.pol$','\.regtrans-ms$','\.blf$','\.pyc'] "prevent certain files from showing up in NerdTree file explorer
 let NERDTreeQuitOnOpen=1
+let g:NERDTreeMapPreview='p'
+let g:NERDTreeMapUpDir='-'
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "  M A P S - M A P S - M A P S - M A P S - M A P S - M A P S - M A P S - M A P S - M A P S -  M A P S - M A  " 
@@ -107,7 +107,7 @@ let NERDTreeQuitOnOpen=1
 " do - 'diff off'               --turns diff off of current buffer
 " dt - 'diff this'              --turns diff on current buffer
 " hl - 'high light'             --toggles highlight search off/on
-" lw - 'line wrap'              --toggles linewrap search off/on
+" sw - 'setwrap'                --toggles linewrap search off/on
 " sb - 'show buffers'           --toggles quickfix list populated with buffers
 " qf - 'quick fix'              --toggles quickfix list 
 " sv - 'show vimrc'             --opens vimrc
@@ -116,11 +116,12 @@ let NERDTreeQuitOnOpen=1
 " gs - 'Gstatus'                --fugitive plugin shortcut to toggle git status
 " fe - 'file explorer'          --open nerdtree
 " zt - 'zoom toggle'            --open new tab with current buffer
+" ws = 'windows swap'           --swap buffers between current window and previous window
 " 
 inoremap jk <Esc>
 nnoremap <Tab> :bn<CR>
 nnoremap <S-Tab> :bp<CR>
-nnoremap <leader>sb :Listbufs<CR>:buffer<Space>
+nnoremap <leader>be :Listbufs<CR>:buffer<Space>
 " when list buffs grows beyond 1 page quickfix window is better
 nnoremap <F2> <Esc>:Bufs2QFix()<CR> 
 nnoremap <F3> :set lines=999 columns=999<CR>
@@ -132,16 +133,18 @@ nnoremap <leader>st :w\|source %<CR>
 nnoremap <leader>do :diffo<CR>
 nnoremap <leader>dt :difft<CR>
 nnoremap <leader>hl :set hlsearch!<CR>
-nnoremap <leader>lw :set wrap!<CR>
+nnoremap <leader>sw :set wrap!<CR>
 nnoremap <leader>sv :e ~/.vimrc<CR>
 nnoremap <leader>qf <Esc>:QFT()<CR>
 nnoremap <leader>zt :tabe %<CR>
+" nnoremap <leader>fe :Vex<CR> 
 nnoremap j gj
 nnoremap k gk
 vnoremap <expr> // 'y/\V'.escape(@",'\').'<CR>'
 "for copying from gvim to external programs instead of setting clipboard unnamed which slows down macros
 nnoremap <leader>y "+y
 vnoremap <leader>y "+y
+nnoremap <Leader>ws <C-c>:call WinBufSwap()<CR>
 "Maps With Dependencies:
 nnoremap <leader>fe :NERDTreeToggle<CR> 
 nnoremap <leader>gs :call ToggleGStatus()<CR>
@@ -223,6 +226,19 @@ augroup QFixToggle
  autocmd BufWinEnter quickfix let g:qfix_win = bufnr("$")
  autocmd BufWinLeave * if exists("g:qfix_win") && expand("<abuf>") == g:qfix_win | unlet! g:qfix_win | endif
 augroup END
+
+" used to switch buffers in windows in complex vertical/horizontal arrangements
+function! WinBufSwap()
+  let thiswin = winnr()
+  let thisbuf = bufnr("%")
+  let lastwin = winnr("#")
+  let lastbuf = winbufnr(lastwin)
+
+  exec  lastwin . " wincmd w" ."|".
+      \ "buffer ". thisbuf ."|".
+      \ thiswin ." wincmd w" ."|".
+      \ "buffer ". lastbuf
+endfunction
 
 "Functions With Dependecies:
 " toggles git status with fugitive plugin
